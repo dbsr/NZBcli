@@ -16,10 +16,7 @@ NZBcli also has very basic sabnzbd integration. The user can chose nzb's from th
 
 CONFIGURATION
 
-NZBcli reads its initial settings from '~/.nzbcli.cfg'. Use '-C' to override the location of the config file.
-
-NZBcli needs some initial configuration settings, specified in
-'~/.nzbcli.cfg' (default location, use '-C' to override.).
+NZBcli reads its initial settings from '~/.nzbcli.cfg'. The parameter '-C /path/to/cfg.file' can be used to specify another location.
 
 USAGE EXAMPLE
 
