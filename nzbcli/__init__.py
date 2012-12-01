@@ -25,15 +25,20 @@ NEWZNAB_KEY = None
 NEWZNAB_URL = None
 
 
-def read_config():
+def read_config(custom_config_location=None):
 
     global RETENTION, SABNZBD_KEY, NEWZNAB_URL, NEWZNAB_KEY, \
             SABNZBD_BASEURL, SABNZBD_CATEGORY
 
     cfg = ConfigParser.RawConfigParser(allow_no_value=False)
 
+    if custom_config_location:
+        cfg_path = custom_config_location
+    else:
+        cfg_path = os.path.join(os.getenv('HOME'), '.nzbcli.cfg')
+
     try:
-        cfg.readfp(open(os.path.join(os.getenv('HOME'), '.nzbcli.cfg'), 'r'))
+        cfg.readfp(open(cfg_path, 'r'))
 
     except IOError:
         raise NZBCliError("Could not read from:  ~/.nzbcli.cfg")
@@ -58,5 +63,6 @@ CATEGORIES = {
     'AUDIOBOOK': '3030',
     'MP3': '3010',
     'LOSSLESS': '3040',
+    'PRON': '6000',
     'ALL': 0
 }
