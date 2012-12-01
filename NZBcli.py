@@ -6,16 +6,17 @@
 import argparse
 import re
 import urllib
+import os
 
 import nzbcli
 from nzbcli.exceptions import NZBCliError
 from nzbcli import prettystd, newznab, nzbindex
 
 
-def main(query, category=None):
+def main(query, category=None, custom_config_location=None):
     # Make sure we got a clean config file
     try:
-        nzbcli.read_config()
+        nzbcli.read_config(custom_config_location)
     except NZBCliError, e:
         prettystd.err(
             msg="{cfgError}! {e}\n".format(cfgError='{cfgError}', e=e),
@@ -188,20 +189,48 @@ if __name__ == '__main__':
                         required=False,
                         default=None,
                         help="eg. 'HDTV' (or 'HDMOVIE', 'SDTV', 'SDMOVIE', \
-                                'MP3', 'AUDIOBOOK').")
+                                'MP3', 'AUDIOBOOK', 'PRON', etc)."),
+    parser.add_argument('--config', '-C',
+                        type=str,
+                        dest='custom_config_location',
+                        required=False,
+                        default=None,
+                        help="eg. '/path/to/nzbcli.cfg'")
     args = vars(parser.parse_args())
     query = args['query']
-    category = args['category']
 
-    try:
-        assert category in nzbcli.CATEGORIES or category is None
-    except AssertionError:
-        prettystd.err(
-            msg="NZBCli: '{e_category}' is not a valid category.",
-            format_dict={'e_category': category},
-            indent=0,
-            newline=False
-        )
+    sane_parameters = True
+    # validate category parameter
+    if args['category']:
+        category = args['category']
+        try:
+            assert category in nzbcli.CATEGORIES
+        except AssertionError:
+            prettystd.err(
+                msg="NZBCli: '{e_category}' is not a valid category.",
+                format_dict={'e_category': category},
+                indent=0,
+                newline=False
+            )
+            sane_parameters = False
     else:
+        category = None
+    # validate custom_config_location parameter
+    if args['custom_config_location']:
+        custom_config_location = args['custom_config_location']
+        try:
+            assert os.path.isfile(custom_config_location)
+        except AssertionError:
+            prettystd.err(
+                msg="NZBCli: '{cfg_file}' is not a valid config file.",
+                format_dict={'cfg_file': custom_config_location},
+                indent=0,
+                newline=False
+            )
+            sane_parameters = False
+    else:
+        custom_config_location = None
+
+    if sane_parameters:
         # valid args, continue:
-        main(query, category)
+        main(query, category, custom_config_location)
