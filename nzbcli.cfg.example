@@ -1,0 +1,13 @@
+[general]
+retention = 500
+
+[newznab]
+url = http://newznab.url
+api_key = 123456789
+
+[sabnzbd]
+host = localhost
+port = 8080
+use_category = True
+nzb_key = aee29f1f0e552d6fc68d9fb65f4a3264
+
