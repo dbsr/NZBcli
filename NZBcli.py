@@ -13,10 +13,10 @@ from nzbcli.exceptions import NZBCliError
 from nzbcli import prettystd, newznab, nzbindex
 
 
-def main(query, category=None, custom_config_location=None):
+def main(query, param_dict):
     # Make sure we got a clean config file
     try:
-        nzbcli.read_config(custom_config_location)
+        nzbcli.read_config(args)
     except NZBCliError, e:
         prettystd.err(
             msg="{cfgError}! {e}\n".format(cfgError='{cfgError}', e=e),
@@ -35,11 +35,11 @@ def main(query, category=None, custom_config_location=None):
     # Initiating search
     prettystd.out(
         msg="{indent} Starting NZB search for '{query}' (category: {category}).",
-        format_dict={'indent': '>', 'query': query, 'category': category},
+        format_dict={'indent': '>', 'query': query, 'category': args['category']},
         indent=0)
     # Query the newznab provider
     try:
-        results = newznab.do_query(query=query, category=category)
+        results = newznab.do_query(query=query, category=args['category'])
     except NZBCliError:
         prettystd.err(
             msg="-> {title}... :(",
@@ -48,6 +48,7 @@ def main(query, category=None, custom_config_location=None):
         )
         return 1
     # Present results and get download targets
+    print results
     download_list = _present_results(results)
 
     if download_list is None:
@@ -65,8 +66,8 @@ def main(query, category=None, custom_config_location=None):
                 'name': url['url']
             }
             # Send category param?
-            if nzbcli.SABNZBD_CATEGORY and category:
-                params.update({'category': category})
+            if nzbcli.SABNZBD_CATEGORY and args['category']:
+                params.update({'category': args['category']})
 
             sab_url = nzbcli.SABNZBD_BASEURL + 'api?' + urllib.urlencode(params)
             urllib.urlopen(sab_url)
@@ -190,6 +191,13 @@ if __name__ == '__main__':
                         default=None,
                         help="eg. 'HDTV' (or 'HDMOVIE', 'SDTV', 'SDMOVIE', \
                                 'MP3', 'AUDIOBOOK', 'PRON', etc)."),
+    parser.add_argument('--filter-foreign', '-f',
+                        type=bool,
+                        dest='filter',
+                        required=False,
+                        default=None,
+                        help="filter non english results (can also be set as \
+                        default in the config file)."),
     parser.add_argument('--config', '-C',
                         type=str,
                         dest='custom_config_location',
@@ -202,19 +210,16 @@ if __name__ == '__main__':
     sane_parameters = True
     # validate category parameter
     if args['category']:
-        category = args['category']
         try:
-            assert category in nzbcli.CATEGORIES
+            assert args['category'] in nzbcli.CATEGORIES
         except AssertionError:
             prettystd.err(
                 msg="NZBCli: '{e_category}' is not a valid category.",
-                format_dict={'e_category': category},
+                format_dict={'e_category': args['category']},
                 indent=0,
                 newline=False
             )
             sane_parameters = False
-    else:
-        category = None
     # validate custom_config_location parameter
     if args['custom_config_location']:
         custom_config_location = args['custom_config_location']
@@ -228,9 +233,7 @@ if __name__ == '__main__':
                 newline=False
             )
             sane_parameters = False
-    else:
-        custom_config_location = None
 
     if sane_parameters:
         # valid args, continue:
-        main(query, category, custom_config_location)
+        main(query, args)

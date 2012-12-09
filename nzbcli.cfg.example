@@ -1,5 +1,6 @@
 [general]
 retention = 500
+filter_foreign = True
 
 [newznab]
 url = http://newznab.url
