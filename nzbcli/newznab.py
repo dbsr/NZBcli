@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 # daanmathot@gmail.com
-# Sat Dec  1 08:23:44 2012
+# Sun Dec  9 06:18:34 2012
 
 
 """
@@ -16,7 +16,6 @@ argument is optional.
 
 
 import urllib
-import json
 import requests
 
 import nzbcli
@@ -32,7 +31,7 @@ def do_query(query, category=None, DEBUG=False):
         'apikey': nzbcli.NEWZNAB_KEY,
         'maxage': nzbcli.RETENTION,
         'limit': 100,
-        'attrs': 'size,group,poster,grabs',
+        'attrs': 'size,group,poster,grabs,category',
         'o': 'json'
     }
 
@@ -45,7 +44,7 @@ def do_query(query, category=None, DEBUG=False):
 
     # make the request and convert the json object to a dictionary
     json_req = requests.get(url)
-    json_dict = json.loads(json_req.content)
+    json_dict = json_req.json
 
     num_results = int((json_dict.get('channel').get('response').get('@attributes')
                             .get('total', 0)))
@@ -62,6 +61,7 @@ def parse_item(item):
     return {
         'title': item['title'],
         'age': utils.date_to_days(item['pubDate']),
+        'category': item['category'],
         '_pubdate': item['pubDate'],
         '_size': item['attr'][2]['@attributes']['value'],
         'size': utils.pretty_size(

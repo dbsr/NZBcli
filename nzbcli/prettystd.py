@@ -60,4 +60,5 @@ def table(results, print_num=True):
     pv.newcol('size')
     pv.newcol('age')
     pv.newcol('grabs')
+    pv.newcol('category')
     print pv.text(results)
