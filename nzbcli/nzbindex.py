@@ -25,8 +25,6 @@ def get_links(nzb_list):
     for nzb in nzb_list:
         # create the URL, format A (strict). Might add a less strict,
         # fail safe query later, for now satisfied with success percentage
-        groupname = nzb['_group']
-        # http://www.nzbindex.nl/rss/?q=the+sapphires&sort=agedesc&minsize=100&maxsize=1000&max=25&more=1
         age = int(nzb['age'][:-1])
         params = {
             'poster': nzb['_poster'],
@@ -37,8 +35,7 @@ def get_links(nzb_list):
             'q': nzb['title']
         }
         url = "http://nzbindex.nl/rss/{groupname}/?{params}".format(
-            groupname=groupname, params=urllib.urlencode(params))
-        print url
+            groupname=nzb['_group'], params=urllib.urlencode(params))
 
         req = urllib.urlopen(url)
 
