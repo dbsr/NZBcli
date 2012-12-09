@@ -17,6 +17,7 @@ argument is optional.
 
 import urllib
 import json
+import requests
 
 import nzbcli
 from nzbcli import utils
@@ -43,25 +44,18 @@ def do_query(query, category=None, DEBUG=False):
                                               params=urllib.urlencode(param))
 
     # make the request and convert the json object to a dictionary
-    if DEBUG:
-        import pickle
-        f = open('pickle2', 'r')
-        json_dict = pickle.load(f)
-        f.close()
-        return json_dict
-    else:
-        json_req = urllib.urlopen(url)
-        json_dict = json.loads(json_req.read())
+    json_req = requests.get(url)
+    json_dict = json.loads(json_req.content)
 
-        num_results = int((json_dict.get('channel').get('response').get('@attributes')
+    num_results = int((json_dict.get('channel').get('response').get('@attributes')
                             .get('total', 0)))
 
-        if num_results == 0:
-            raise NZBCliError("The query '%s' returned no results" % query)
-        elif num_results == 1:
-            return [parse_item(json_dict['channel']['item'])]
-        else:
-            return [parse_item(x) for x in json_dict['channel']['item']]
+    if num_results == 0:
+        raise NZBCliError("The query '%s' returned no results" % query)
+    elif num_results == 1:
+        return [parse_item(json_dict['channel']['item'])]
+    else:
+        return [parse_item(x) for x in json_dict['channel']['item']]
 
 
 def parse_item(item):
