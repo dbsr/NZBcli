@@ -17,6 +17,7 @@ argument is optional.
 
 import urllib
 import requests
+import re
 
 import nzbcli
 from nzbcli import utils
@@ -52,14 +53,35 @@ def do_query(query, category=None, DEBUG=False):
     if num_results == 0:
         raise NZBCliError("The query '%s' returned no results" % query)
     elif num_results == 1:
-        return [parse_item(json_dict['channel']['item'])]
+        results = [parse_item(json_dict['channel']['item'])]
     else:
-        return [parse_item(x) for x in json_dict['channel']['item']]
+        results = [parse_item(x) for x in json_dict['channel']['item']]
+
+    if nzbcli.FILTER:
+        results = filter_foreign(results)
+        if not len(results) > 0:
+            raise NZBCliError("No results after applying filter.")
+
+    return results
+
+
+def filter_foreign(results):
+    rgx = re.compile(r'.*\b(german|ita|french|de|deutch|das)\b.*',
+                     re.IGNORECASE)
+    _results = []
+    for result in results:
+        if not re.match(rgx, result['title']):
+            _results.append(result)
+
+    return _results
 
 
 def parse_item(item):
+    # max lenght for table
+    if len(item['title']) > 80:
+        item['title'] = item['title'][:78] + '..'
     return {
-        'title': item['title'],
+        'title': item['title'].encode('utf-8').strip(),
         'age': utils.date_to_days(item['pubDate']),
         'category': item['category'],
         '_pubdate': item['pubDate'],

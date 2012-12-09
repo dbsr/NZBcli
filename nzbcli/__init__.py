@@ -23,17 +23,18 @@ SABNZBD_KEY = None
 SABNZBD_BASEURL = None
 NEWZNAB_KEY = None
 NEWZNAB_URL = None
+FILTER = None
 
 
-def read_config(custom_config_location=None):
+def read_config(param):
 
     global RETENTION, SABNZBD_KEY, NEWZNAB_URL, NEWZNAB_KEY, \
-            SABNZBD_BASEURL, SABNZBD_CATEGORY
+            SABNZBD_BASEURL, SABNZBD_CATEGORY, FILTER
 
     cfg = ConfigParser.RawConfigParser(allow_no_value=False)
 
-    if custom_config_location:
-        cfg_path = custom_config_location
+    if param['custom_config_location']:
+        cfg_path = param['custom_config_location']
     else:
         cfg_path = os.path.join(os.getenv('HOME'), '.nzbcli.cfg')
 
@@ -44,6 +45,7 @@ def read_config(custom_config_location=None):
         raise NZBCliError("Could not read from:  ~/.nzbcli.cfg")
 
     RETENTION = cfg.get('general', 'retention')
+    FILTER = cfg.get('general', 'filter_foreign')
     # Build the sabnzbd base url
     SABNZBD_BASEURL = "http://{host}:{port}/sabnzbd/".format(
         host=cfg.get('sabnzbd', 'host'), port=cfg.get('sabnzbd', 'port'))
@@ -51,6 +53,11 @@ def read_config(custom_config_location=None):
     SABNZBD_KEY = cfg.get('sabnzbd', 'nzb_key')
     NEWZNAB_URL = cfg.get('newznab', 'url')
     NEWZNAB_KEY = cfg.get('newznab', 'api_key')
+
+    # Override config settings if param
+    if param['filter']:
+        FILTER = True
+
 
 # Static constants
 
